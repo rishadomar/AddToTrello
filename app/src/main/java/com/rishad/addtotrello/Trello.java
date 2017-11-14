@@ -12,7 +12,19 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
+
+class TrelloBoard {
+	String id;
+	String name;
+
+	public TrelloBoard(String id, String name) {
+		Log.i("Info", "Board " + name);
+		this.id = id;
+		this.name = name;
+	}
+}
 
 public class Trello {
 	private static final String TrelloScheme = "https";
@@ -31,7 +43,7 @@ public class Trello {
 				.appendPath("boards")
 				.appendQueryParameter("key", TrelloKey)
 				.appendQueryParameter("token", Token);
-		DownloadTask task = new DownloadTask();
+		DownloadBoardsTask task = new DownloadBoardsTask();
 		task.execute(builder.build().toString()); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
 	}
 
@@ -46,7 +58,13 @@ https://www.techrepublic.com/blog/software-engineer/using-androids-asynctask-to-
 https://code.tutsplus.com/tutorials/android-sdk-making-remote-api-calls--mobile-17568
  */
 
-class DownloadTask extends AsyncTask<String, Void, String> {
+class DownloadBoardsTask extends AsyncTask<String, Void, String> {
+
+	List<TrelloBoard> boards;
+
+	DownloadBoardsTask() {
+		boards = new ArrayList<TrelloBoard>();
+	}
 
 	@Override
 	protected String doInBackground(String... urls) {
@@ -67,13 +85,9 @@ class DownloadTask extends AsyncTask<String, Void, String> {
 			int data = reader.read();
 
 			while (data != -1) {
-
 				char current = (char) data;
-
 				result += current;
-
 				data = reader.read();
-
 			}
 
 			return result;
@@ -90,35 +104,15 @@ class DownloadTask extends AsyncTask<String, Void, String> {
 	@Override
 	protected void onPostExecute(String result) {
 		super.onPostExecute(result);
-
 		try {
-
-			String message = "";
 			JSONArray arr = new JSONArray(result);
 			for (int i = 0; i < arr.length(); i++) {
 				JSONObject jsonPart = arr.getJSONObject(i);
-				String boardName = jsonPart.getString("name");
-				Log.i("Info", boardName);
+				boards.add(new TrelloBoard(jsonPart.getString("id"), jsonPart.getString("name")));
 			}
-
-			if (message != "") {
-
-				Log.i("Info", message);
-
-			} else {
-
-				Log.i("Info", "Could not find trello");
-
-			}
-
-
 		} catch (JSONException e) {
-
 			Log.i("Info", "Could not find weather");
-
 		}
-
-
 
 	}
 }
