@@ -8,19 +8,14 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 class TrelloBoard {
 	String id;
@@ -160,37 +155,24 @@ class TrelloCard {
 class PostDetail {
 	String url;
 	JSONObject jsonParam = new JSONObject();
-	ArrayList<Map.Entry<String, String>> params;
 
 	PostDetail(String url) {
 		this.url = url;
 		this.jsonParam = new JSONObject();
-		this.params = new ArrayList<Map.Entry<String, String>>();
 		//this.params = new List<AbstractMap.SimpleEntry<String, String>>();
 	}
 
 	void addParameter(String key, String value) {
-		//params.put(new AbstractMap.SimpleEntry<String, String)>(key, value));
-		params.add(new AbstractMap.SimpleEntry(key, value));
+		try {
+			jsonParam.put(key, value);
+		} catch (JSONException e) {
+			Log.i("Info", "Error with json setting value. Reason: " + e.getMessage());
+		}
 	}
 
 	public String getParameters() throws UnsupportedEncodingException
 	{
-		StringBuilder result = new StringBuilder();
-		boolean first = true;
-
-		for (Map.Entry<String, String> pair : params)
-		{
-			if (first)
-				first = false;
-			else
-				result.append("&");
-			result.append(URLEncoder.encode(pair.getKey().toString(), "UTF-8"));
-			result.append("=");
-			result.append(URLEncoder.encode(pair.getValue().toString(), "UTF-8"));
-		}
-
-		return result.toString();
+		return jsonParam.toString();
 	}
 }
 
@@ -206,24 +188,33 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 			PostDetail postDetail = postDetails[0];
 			url = new URL(postDetail.url);
 
-			TrelloCard trelloCard(null, "bingo", "testing");
-
 			urlConnection = (HttpURLConnection) url.openConnection();
 			urlConnection.setRequestMethod("POST");
-			urlConnection.setRequestProperty("Content-Type", "application/json");
+			urlConnection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
+			urlConnection.setRequestProperty("Accept","application/json");
+			//urlConnection.setRequestProperty("Content-Type", "application/json");
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
 
-			OutputStream os = urlConnection.getOutputStream();
-			BufferedWriter writer = new BufferedWriter(
-					new OutputStreamWriter(os, "UTF-8"));
-			Gson         gson          = new Gson();
-			//writer.write(postDetail.getParameters());
-			writer.write();
-			String debug = postDetail.getParameters();
-			writer.flush();
-			writer.close();
+
+			DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
+			//os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
+			os.writeBytes(postDetail.getParameters());
+
+			os.flush();
 			os.close();
+
+			Log.i("STATUS", String.valueOf(urlConnection.getResponseCode()));
+			Log.i("MSG" , urlConnection.getResponseMessage());
+
+//			OutputStream os = urlConnection.getOutputStream();
+//			BufferedWriter writer = new BufferedWriter(
+//					new OutputStreamWriter(os, "UTF-8"));
+//			String debug = postDetail.getParameters();
+//			writer.write(postDetail.getParameters());
+//			writer.flush();
+//			writer.close();
+//			os.close();
 
 			urlConnection.connect();
 			Log.i("Info", "PostTask complete");
