@@ -13,7 +13,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
+	Trello trello;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+	    trello = new Trello();
         Button sendButton = findViewById(R.id.sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,16 +60,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void sendToApp(String text) {
-	    String action = text.substring(0, text.indexOf(' '));
-	    if (action.equalsIgnoreCase("remind")) {
-		    Toast.makeText(getApplicationContext(), "Send to slack: " + text, Toast.LENGTH_SHORT).show();
-	    } else if (action.matches("^.*?(monday|tuesday|wednesday|thursday|friday|weekend|drawer).*$")) {
-		    Toast.makeText(getApplicationContext(), "Send to column: " + action, Toast.LENGTH_SHORT).show();
-	    } else {
-		    Toast.makeText(getApplicationContext(), "Send to drawer: " + text, Toast.LENGTH_SHORT).show();
-		    Trello trello = new Trello();
+		String boardId = "5820c3a79b8e3dbe6f8569d2";
+		String listId = "58aad0a4e38ef4062a6af521";
 
-	    }
+		trello.addCard(text);
+
+	    //String action = text.substring(0, text.indexOf(' '));
+		//List<TrelloBoard> boards = (ArrayList<TrelloBoard>) trello .getBoards();
     }
 
 }
