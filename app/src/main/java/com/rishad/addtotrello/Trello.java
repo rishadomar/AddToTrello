@@ -1,5 +1,6 @@
 package com.rishad.addtotrello;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -65,8 +66,9 @@ public class Trello {
 	private static final String Token = "aa06b25297ecbe9887a0920a2fc8ec23b719c86f5a1227ad2771a07ef20a7910";
 	List<TrelloBoard> boards;
 	List<TrelloCard> cards;
+	TrelloDatabase trelloDatabase;
 
-	public Trello() {
+	public Trello(Context context) {
 		Uri.Builder builder = new Uri.Builder();
 		builder.scheme(TrelloScheme)
 				.authority(TrelloApi)
@@ -80,6 +82,7 @@ public class Trello {
 		DownloadBoardsTask task = new DownloadBoardsTask(boards);
 		task.execute(builder.build().toString()); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
 
+		this.trelloDatabase = new TrelloDatabase(context);
 		readPendingCards();
 	}
 
@@ -88,11 +91,21 @@ public class Trello {
 	}
 
 	private void readPendingCards() {
+		Log.i("Cards", "About to read all cards");
 		this.cards = new ArrayList<TrelloCard>();
+		ArrayList<String> allCards = this.trelloDatabase.getAllCards();
+		for (int i = 0; i < allCards.size(); i++) {
+			String trelloId = allCards.get(i);
+			Log.i("Card", trelloId);
+			//TrelloCard trelloCard = allCards.get(i);
+			//Log.i('Card', trelloCard.getName() + " " + trelloCard.getDescription());
+		}
+
 	}
 
 	public void addCard(TrelloCard trelloCard) {
 		this.cards.add(trelloCard);
+		this.trelloDatabase.insertCard(trelloCard);
 		sendCard(trelloCard);
 	}
 

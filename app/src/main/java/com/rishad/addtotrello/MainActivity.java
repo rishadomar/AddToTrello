@@ -26,13 +26,14 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-	    trello = new Trello();
+	    trello = new Trello(getApplicationContext());
         Button sendButton = findViewById(R.id.sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 EditText appEditTextView = findViewById(R.id.appEditText);
                 sendToApp(appEditTextView.getText().toString());
+                appEditTextView.setText("");
             }
         });
     }
