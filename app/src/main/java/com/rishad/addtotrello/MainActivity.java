@@ -63,7 +63,8 @@ public class MainActivity extends AppCompatActivity {
 		String boardId = "5820c3a79b8e3dbe6f8569d2";
 		String listId = "58aad0a4e38ef4062a6af521";
 
-		trello.addCard(text);
+		TrelloCard trelloCard = new TrelloCard(text);
+		trello.addCard(trelloCard);
 
 	    //String action = text.substring(0, text.indexOf(' '));
 		//List<TrelloBoard> boards = (ArrayList<TrelloBoard>) trello .getBoards();

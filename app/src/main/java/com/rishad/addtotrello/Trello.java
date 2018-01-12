@@ -28,12 +28,43 @@ class TrelloBoard {
 	}
 }
 
+class TrelloCard {
+	String name;
+	String description;
+	Boolean posted;
+
+	public TrelloCard(String name, String description) {
+		this.name = name;
+		this.description = description;
+		this.posted = false;
+	}
+
+	public TrelloCard(String text) {
+		if (text.length() > 50) {
+			this.name = text.substring(0, 50) + "...";
+			this.description = text;
+		} else {
+			this.name = text;
+			this.description = "";
+		}
+	}
+
+	public String getName() {
+		return this.name;
+	}
+
+	public String getDescription() {
+		return this.description;
+	}
+}
+
 public class Trello {
 	private static final String TrelloScheme = "https";
 	private static final String TrelloApi = "api.trello.com";
 	private static final String TrelloKey = "06537c528f72a5985eb9e0d1ebee4595";
 	private static final String Token = "aa06b25297ecbe9887a0920a2fc8ec23b719c86f5a1227ad2771a07ef20a7910";
 	List<TrelloBoard> boards;
+	List<TrelloCard> cards;
 
 	public Trello() {
 		Uri.Builder builder = new Uri.Builder();
@@ -48,13 +79,24 @@ public class Trello {
 		boards = new ArrayList<TrelloBoard>();
 		DownloadBoardsTask task = new DownloadBoardsTask(boards);
 		task.execute(builder.build().toString()); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
+
+		readPendingCards();
 	}
 
 	public List<TrelloBoard> getBoards() {
 		return boards;
 	}
 
-	public void addCard(String description) {
+	private void readPendingCards() {
+		this.cards = new ArrayList<TrelloCard>();
+	}
+
+	public void addCard(TrelloCard trelloCard) {
+		this.cards.add(trelloCard);
+		sendCard(trelloCard);
+	}
+
+	private void sendCard(TrelloCard card) {
 		Uri.Builder builder = new Uri.Builder();
 		builder.scheme(TrelloScheme)
 				.authority(TrelloApi)
@@ -64,8 +106,8 @@ public class Trello {
 				.appendQueryParameter("token", Token);
 		PostDetail postDetail = new PostDetail(builder.build().toString());
 		PostTask postTask = new PostTask();
-		postDetail.addParameter("name", "bingo");
-		postDetail.addParameter("desc", description);
+		postDetail.addParameter("name", card.getName());
+		postDetail.addParameter("desc", card.getDescription());
 		postDetail.addParameter("idList", "58aad0a4e38ef4062a6af521");
 		postDetail.addParameter("pos", "bottom");
 		postTask.execute(postDetail); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
@@ -136,20 +178,6 @@ class DownloadBoardsTask extends AsyncTask<String, Void, String> {
 		}
 
 	}
-}
-
-class TrelloCard {
-	String id;
-	String name;
-	String description;
-
-	void TrelloCard(String id, String name, String description) {
-		this.id = id;
-		this.name = name;
-		this.description = description;
-	}
-
-
 }
 
 class PostDetail {
