@@ -1,6 +1,5 @@
 package com.rishad.addtotrello;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
@@ -98,8 +97,6 @@ public class Trello {
 		for (int i = 0; i < allCards.size(); i++) {
 			String trelloId = allCards.get(i);
 			Log.i("Card", trelloId);
-			//TrelloCard trelloCard = allCards.get(i);
-			//Log.i('Card', trelloCard.getName() + " " + trelloCard.getDescription());
 		}
 
 	}
@@ -124,17 +121,9 @@ public class Trello {
 		postDetail.addParameter("desc", card.getDescription());
 		postDetail.addParameter("idList", TrelloList);
 		postDetail.addParameter("pos", "bottom");
-		postTask.execute(postDetail); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
-		// See https://stackoverflow.com/questions/9767952/how-to-add-parameters-to-httpurlconnection-using-post
-		// https://stackoverflow.com/questions/2793150/using-java-net-urlconnection-to-fire-and-handle-http-requests
+		postTask.execute(postDetail);
 	}
 }
-
-/*
-https://www.techrepublic.com/blog/software-engineer/using-androids-asynctask-to-handle-long-running-i-o/
-
-https://code.tutsplus.com/tutorials/android-sdk-making-remote-api-calls--mobile-17568
- */
 
 class DownloadBoardsTask extends AsyncTask<String, Void, String> {
 	ArrayList<TrelloBoard> boards;
@@ -203,7 +192,6 @@ class PostDetail {
 		this.card = card;
 		this.url = url;
 		this.jsonParam = new JSONObject();
-		//this.params = new List<AbstractMap.SimpleEntry<String, String>>();
 	}
 
 	void addParameter(String key, String value) {
@@ -236,13 +224,11 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 			urlConnection.setRequestMethod("POST");
 			urlConnection.setRequestProperty("Content-Type", "application/json;charset=UTF-8");
 			urlConnection.setRequestProperty("Accept","application/json");
-			//urlConnection.setRequestProperty("Content-Type", "application/json");
 			urlConnection.setDoOutput(true);
 			urlConnection.setDoInput(true);
 
 
 			DataOutputStream os = new DataOutputStream(urlConnection.getOutputStream());
-			//os.writeBytes(URLEncoder.encode(jsonParam.toString(), "UTF-8"));
 			os.writeBytes(postDetail.getParameters());
 
 			os.flush();
@@ -250,15 +236,6 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 
 			Log.i("STATUS", String.valueOf(urlConnection.getResponseCode()));
 			Log.i("MSG" , urlConnection.getResponseMessage());
-
-//			OutputStream os = urlConnection.getOutputStream();
-//			BufferedWriter writer = new BufferedWriter(
-//					new OutputStreamWriter(os, "UTF-8"));
-//			String debug = postDetail.getParameters();
-//			writer.write(postDetail.getParameters());
-//			writer.flush();
-//			writer.close();
-//			os.close();
 
 			urlConnection.connect();
 			Log.i("Info", "PostTask complete");
