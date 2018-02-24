@@ -12,8 +12,11 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 	public static final String DATABASE_NAME = "trello.db";
 	public static final String CARDS_TABLE_NAME = "cards";
 	public static final String CARDS_COLUMN_ID = "id";
+	public static final String CARDS_COLUMN_STATUS = "status";
 	public static final String CARDS_COLUMN_NAME = "name";
 	public static final String CARDS_COLUMN_DESCRIPTION = "description";
+	public static final String STATUS_NEW = "New";
+	public static final String STATUS_DONE = "Done";
 
 	public TrelloDatabase(Context context) {
 		super(context, DATABASE_NAME , null, 1);
@@ -27,6 +30,8 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 						"(" +
 						CARDS_COLUMN_ID +
 						" integer primary key, " +
+						CARDS_COLUMN_STATUS +
+						" text, " +
 						CARDS_COLUMN_NAME +
 						" text, " +
 						CARDS_COLUMN_DESCRIPTION +
@@ -43,6 +48,7 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 	public boolean insertCard(TrelloCard trelloCard) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues contentValues = new ContentValues();
+		contentValues.put("status", STATUS_NEW);
 		contentValues.put("name", trelloCard.getName());
 		contentValues.put("description", trelloCard.getDescription());
 		db.insert("cards", null, contentValues);
@@ -87,7 +93,9 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 		while(res.isAfterLast() == false){
 			array_list.add(res.getString(res.getColumnIndex(CARDS_COLUMN_ID)) +
 				" " +
-				res.getString(res.getColumnIndex(CARDS_COLUMN_NAME)));
+				res.getString(res.getColumnIndex(CARDS_COLUMN_NAME)) +
+				" " +
+				res.getString(res.getColumnIndex(CARDS_COLUMN_STATUS)));
 			res.moveToNext();
 		}
 		return array_list;

@@ -64,11 +64,13 @@ public class Trello {
 	private static final String TrelloApi = "api.trello.com";
 	private static final String TrelloKey = "06537c528f72a5985eb9e0d1ebee4595";
 	private static final String Token = "aa06b25297ecbe9887a0920a2fc8ec23b719c86f5a1227ad2771a07ef20a7910";
+	private static final String TrelloList = "5a6600d84aa8704105701ce5";
 	List<TrelloBoard> boards;
 	List<TrelloCard> cards;
-	TrelloDatabase trelloDatabase;
+	private TrelloDatabase trelloDatabase;
 
-	public Trello(Context context) {
+	public Trello(TrelloDatabase trelloDatabase) {
+		this.trelloDatabase = trelloDatabase;
 		Uri.Builder builder = new Uri.Builder();
 		builder.scheme(TrelloScheme)
 				.authority(TrelloApi)
@@ -82,7 +84,6 @@ public class Trello {
 		DownloadBoardsTask task = new DownloadBoardsTask(boards);
 		task.execute(builder.build().toString()); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
 
-		this.trelloDatabase = new TrelloDatabase(context);
 		readPendingCards();
 	}
 
@@ -117,11 +118,11 @@ public class Trello {
 				.appendPath("cards")
 				.appendQueryParameter("key", TrelloKey)
 				.appendQueryParameter("token", Token);
-		PostDetail postDetail = new PostDetail(builder.build().toString());
+		PostDetail postDetail = new PostDetail(card, builder.build().toString());
 		PostTask postTask = new PostTask();
 		postDetail.addParameter("name", card.getName());
 		postDetail.addParameter("desc", card.getDescription());
-		postDetail.addParameter("idList", "58aad0a4e38ef4062a6af521");
+		postDetail.addParameter("idList", TrelloList);
 		postDetail.addParameter("pos", "bottom");
 		postTask.execute(postDetail); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
 		// See https://stackoverflow.com/questions/9767952/how-to-add-parameters-to-httpurlconnection-using-post
@@ -196,8 +197,10 @@ class DownloadBoardsTask extends AsyncTask<String, Void, String> {
 class PostDetail {
 	String url;
 	JSONObject jsonParam = new JSONObject();
+	TrelloCard card;
 
-	PostDetail(String url) {
+	PostDetail(TrelloCard card, String url) {
+		this.card = card;
 		this.url = url;
 		this.jsonParam = new JSONObject();
 		//this.params = new List<AbstractMap.SimpleEntry<String, String>>();
@@ -259,12 +262,13 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 
 			urlConnection.connect();
 			Log.i("Info", "PostTask complete");
+			return postDetail.card.getName();
 
 		} catch (Exception e) {
 			Log.i("Error", "Failed in POST. Reason: " + e.getMessage());
+			return null;
 		}
 
-		return null;
 	}
 
 	@Override
