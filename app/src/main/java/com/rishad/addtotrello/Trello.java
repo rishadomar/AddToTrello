@@ -29,14 +29,16 @@ class TrelloBoard {
 }
 
 class TrelloCard {
+	Integer id;
 	String name;
 	String description;
-	Boolean posted;
+	String status;
 
-	public TrelloCard(String name, String description) {
+	public TrelloCard(Integer id, String status, String name, String description) {
+		this.id = id;
+		this.status = status;
 		this.name = name;
 		this.description = description;
-		this.posted = false;
 	}
 
 	public TrelloCard(String text) {
@@ -49,8 +51,16 @@ class TrelloCard {
 		}
 	}
 
+	public Integer getId() {
+		return this.id;
+	}
+
 	public String getName() {
 		return this.name;
+	}
+
+	public String getStatus() {
+		return this.status;
 	}
 
 	public String getDescription() {
@@ -83,22 +93,33 @@ public class Trello {
 		DownloadBoardsTask task = new DownloadBoardsTask(boards);
 		task.execute(builder.build().toString()); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
 
-		readPendingCards();
+		//readPendingCards();
 	}
 
 	public List<TrelloBoard> getBoards() {
 		return boards;
 	}
 
-	private void readPendingCards() {
-		Log.i("Cards", "About to read all cards");
-		this.cards = new ArrayList<TrelloCard>();
-		ArrayList<String> allCards = this.trelloDatabase.getAllCards();
-		for (int i = 0; i < allCards.size(); i++) {
-			String trelloId = allCards.get(i);
-			Log.i("Card", trelloId);
-		}
+//	private List<TrelloCard> readPendingCards() {
+//		Log.i("Cards", "About to read all cards");
+//		this.cards = new ArrayList<TrelloCard>();
+//		ArrayList<TrelloCard> allCards = this.trelloDatabase.getAllCards();
+//		for (int i = 0; i < allCards.size(); i++) {
+//			Integer trelloId = allCards.get(i);
+//			Log.i("Card", trelloId);
+//		}
+//
+//	}
 
+	public ArrayList<String> getCardsAsStrings() {
+		ArrayList<String> array_list = new ArrayList<String>();
+		this.cards = this.trelloDatabase.getAllCards();
+		for (int i = 0; i < this.cards.size(); i++) {
+			TrelloCard t = this.cards.get(i);
+			String s = t.getId() + " " +  t.getStatus() + " " + t.getName();
+			array_list.add(s);
+		}
+		return array_list;
 	}
 
 	public void addCard(TrelloCard trelloCard) {

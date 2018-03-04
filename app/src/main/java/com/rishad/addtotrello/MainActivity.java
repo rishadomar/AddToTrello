@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity {
         //
 	    // List
 	    //
-	    ArrayList<String> cards = this.trelloDatabase.getAllCards();
+	    ArrayList<String> cards = this.trello.getCardsAsStrings();
         mainListView = (ListView) findViewById( R.id.mainListView );
 
         // Create ArrayAdapter using the planet list.
@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private void sendToApp(String text) {
 		TrelloCard trelloCard = new TrelloCard(text);
 		trello.addCard(trelloCard);
+		listAdapter.add(trelloCard.toString());
     }
 
 }

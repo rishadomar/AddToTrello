@@ -83,19 +83,19 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 				new String[] { Integer.toString(id) });
 	}
 
-	public ArrayList<String> getAllCards() {
-		ArrayList<String> array_list = new ArrayList<String>();
+	public ArrayList<TrelloCard> getAllCards() {
+		ArrayList<TrelloCard> array_list = new ArrayList<TrelloCard>();
 
 		SQLiteDatabase db = this.getReadableDatabase();
 		Cursor res =  db.rawQuery( "select * from cards", null );
 		res.moveToFirst();
 
-		while(res.isAfterLast() == false){
-			array_list.add(res.getString(res.getColumnIndex(CARDS_COLUMN_ID)) +
-				" " +
-				res.getString(res.getColumnIndex(CARDS_COLUMN_NAME)) +
-				" " +
-				res.getString(res.getColumnIndex(CARDS_COLUMN_STATUS)));
+		while(!res.isAfterLast()) {
+			TrelloCard trelloCard = new TrelloCard(res.getInt(res.getColumnIndex(CARDS_COLUMN_ID)),
+					res.getString(res.getColumnIndex(CARDS_COLUMN_STATUS)),
+					res.getString(res.getColumnIndex(CARDS_COLUMN_NAME)),
+					res.getString(res.getColumnIndex(CARDS_COLUMN_DESCRIPTION)));
+			array_list.add(trelloCard);
 			res.moveToNext();
 		}
 		return array_list;
