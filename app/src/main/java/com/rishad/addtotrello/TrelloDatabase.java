@@ -51,7 +51,7 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 		contentValues.put("status", STATUS_NEW);
 		contentValues.put("name", trelloCard.getName());
 		contentValues.put("description", trelloCard.getDescription());
-		db.insert("cards", null, contentValues);
+		trelloCard.setId(db.insert("cards", null, contentValues));
 		return true;
 	}
 
@@ -73,6 +73,14 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 		contentValues.put("name", name);
 		contentValues.put("description", description);
 		db.update("cards", contentValues, "id = ? ", new String[] { Integer.toString(id) } );
+		return true;
+	}
+
+	public boolean updateStatus(long id, String newStatus) {
+		SQLiteDatabase db = this.getWritableDatabase();
+		ContentValues contentValues = new ContentValues();
+		contentValues.put("status", newStatus);
+		db.update("cards", contentValues, "id = ? ", new String[] { Long.toString(id) } );
 		return true;
 	}
 

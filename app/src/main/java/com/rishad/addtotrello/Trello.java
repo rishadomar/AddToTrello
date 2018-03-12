@@ -29,7 +29,7 @@ class TrelloBoard {
 }
 
 class TrelloCard {
-	Integer id;
+	long id;
 	String name;
 	String description;
 	String status;
@@ -51,7 +51,11 @@ class TrelloCard {
 		}
 	}
 
-	public Integer getId() {
+	public void setId(long id) {
+		this.id = id;
+	}
+
+	public long getId() {
 		return this.id;
 	}
 
@@ -136,13 +140,14 @@ public class Trello {
 				.appendPath("cards")
 				.appendQueryParameter("key", TrelloKey)
 				.appendQueryParameter("token", Token);
-		PostDetail postDetail = new PostDetail(card, builder.build().toString());
+		PostDetail postDetail = new PostDetail(card, this.trelloDatabase, builder.build().toString());
 		PostTask postTask = new PostTask();
 		postDetail.addParameter("name", card.getName());
 		postDetail.addParameter("desc", card.getDescription());
 		postDetail.addParameter("idList", TrelloList);
 		postDetail.addParameter("pos", "bottom");
 		postTask.execute(postDetail);
+		Log.i("Info", "Execute task launched");
 	}
 }
 
@@ -208,11 +213,13 @@ class PostDetail {
 	String url;
 	JSONObject jsonParam = new JSONObject();
 	TrelloCard card;
+	TrelloDatabase trelloDatabase;
 
-	PostDetail(TrelloCard card, String url) {
+	PostDetail(TrelloCard card, TrelloDatabase trelloDatabase, String url) {
 		this.card = card;
 		this.url = url;
 		this.jsonParam = new JSONObject();
+		this.trelloDatabase = trelloDatabase;
 	}
 
 	void addParameter(String key, String value) {
@@ -231,6 +238,9 @@ class PostDetail {
 
 class PostTask extends AsyncTask<PostDetail, Void, String> {
 
+	PostDetail postDetail;
+
+
 	@Override
 	protected String doInBackground(PostDetail... postDetails) {
 
@@ -238,7 +248,7 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 		HttpURLConnection urlConnection = null;
 
 		try {
-			PostDetail postDetail = postDetails[0];
+			this.postDetail = postDetails[0];
 			url = new URL(postDetail.url);
 
 			urlConnection = (HttpURLConnection) url.openConnection();
@@ -260,7 +270,7 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 
 			urlConnection.connect();
 			Log.i("Info", "PostTask complete");
-			return postDetail.card.getName();
+			return Long.toString(postDetail.card.getId());
 
 		} catch (Exception e) {
 			Log.i("Error", "Failed in POST. Reason: " + e.getMessage());
@@ -273,5 +283,6 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 	protected void onPostExecute(String result) {
 		super.onPostExecute(result);
 		Log.i("Info", "Successful post: " + result);
+		postDetail.trelloDatabase.updateStatus(postDetail.card.getId(), "Sent");
 	}
 }
