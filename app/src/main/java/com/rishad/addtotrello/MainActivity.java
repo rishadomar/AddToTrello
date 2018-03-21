@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     private void sendToApp(String text) {
 		TrelloCard trelloCard = new TrelloCard(text);
 		trello.addCard(trelloCard);
-		listAdapter.add(trelloCard.toString());
+		listAdapter.insert(trelloCard.toString(), 0);
     }
 
 }

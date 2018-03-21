@@ -16,7 +16,7 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 	public static final String CARDS_COLUMN_NAME = "name";
 	public static final String CARDS_COLUMN_DESCRIPTION = "description";
 	public static final String STATUS_NEW = "New";
-	public static final String STATUS_DONE = "Done";
+	public static final String STATUS_SENT = "Sent";
 
 	public TrelloDatabase(Context context) {
 		super(context, DATABASE_NAME , null, 1);
@@ -48,7 +48,7 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 	public boolean insertCard(TrelloCard trelloCard) {
 		SQLiteDatabase db = this.getWritableDatabase();
 		ContentValues contentValues = new ContentValues();
-		contentValues.put("status", STATUS_NEW);
+		contentValues.put("status", trelloCard.getStatus());
 		contentValues.put("name", trelloCard.getName());
 		contentValues.put("description", trelloCard.getDescription());
 		trelloCard.setId(db.insert("cards", null, contentValues));
@@ -95,7 +95,7 @@ public class TrelloDatabase extends SQLiteOpenHelper {
 		ArrayList<TrelloCard> array_list = new ArrayList<TrelloCard>();
 
 		SQLiteDatabase db = this.getReadableDatabase();
-		Cursor res =  db.rawQuery( "select * from cards", null );
+		Cursor res =  db.rawQuery( "SELECT * FROM cards ORDER BY id DESC", null );
 		res.moveToFirst();
 
 		while(!res.isAfterLast()) {

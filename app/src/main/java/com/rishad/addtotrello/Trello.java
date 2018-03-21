@@ -49,6 +49,7 @@ class TrelloCard {
 			this.name = text;
 			this.description = "";
 		}
+		this.status = TrelloDatabase.STATUS_NEW;
 	}
 
 	public void setId(long id) {
@@ -70,6 +71,10 @@ class TrelloCard {
 	public String getDescription() {
 		return this.description;
 	}
+
+	public String toString() {
+		return this.getId() + " " +  this.getStatus() + " " + this.getName();
+	}
 }
 
 public class Trello {
@@ -84,6 +89,11 @@ public class Trello {
 
 	public Trello(TrelloDatabase trelloDatabase) {
 		this.trelloDatabase = trelloDatabase;
+		//fetchBoards();
+		//readPendingCards();
+	}
+
+	private void fetchBoards() {
 		Uri.Builder builder = new Uri.Builder();
 		builder.scheme(TrelloScheme)
 				.authority(TrelloApi)
@@ -93,11 +103,10 @@ public class Trello {
 				.appendPath("boards")
 				.appendQueryParameter("key", TrelloKey)
 				.appendQueryParameter("token", Token);
-		boards = new ArrayList<TrelloBoard>();
-		DownloadBoardsTask task = new DownloadBoardsTask(boards);
+		this.boards = new ArrayList<TrelloBoard>();
+		DownloadBoardsTask task = new DownloadBoardsTask(this.boards);
 		task.execute(builder.build().toString()); //TrelloApi + "?key=" + TrelloKey + "&token=" + Token);
 
-		//readPendingCards();
 	}
 
 	public List<TrelloBoard> getBoards() {
@@ -120,7 +129,7 @@ public class Trello {
 		this.cards = this.trelloDatabase.getAllCards();
 		for (int i = 0; i < this.cards.size(); i++) {
 			TrelloCard t = this.cards.get(i);
-			String s = t.getId() + " " +  t.getStatus() + " " + t.getName();
+			String s = t.toString();
 			array_list.add(s);
 		}
 		return array_list;
@@ -283,6 +292,6 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 	protected void onPostExecute(String result) {
 		super.onPostExecute(result);
 		Log.i("Info", "Successful post: " + result);
-		postDetail.trelloDatabase.updateStatus(postDetail.card.getId(), "Sent");
+		postDetail.trelloDatabase.updateStatus(postDetail.card.getId(), TrelloDatabase.STATUS_SENT);
 	}
 }
