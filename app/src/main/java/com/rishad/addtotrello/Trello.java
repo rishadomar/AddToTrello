@@ -3,6 +3,9 @@ package com.rishad.addtotrello;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
+import android.widget.BaseAdapter;
+import android.widget.ListAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -66,6 +69,10 @@ class TrelloCard {
 
 	public String getStatus() {
 		return this.status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public String getDescription() {
@@ -135,13 +142,13 @@ public class Trello {
 		return array_list;
 	}
 
-	public void addCard(TrelloCard trelloCard) {
+	public void addCard(TrelloCard trelloCard, ListAdapter listAdapter) {
 		this.cards.add(trelloCard);
 		this.trelloDatabase.insertCard(trelloCard);
-		sendCard(trelloCard);
+		sendCard(trelloCard, listAdapter);
 	}
 
-	private void sendCard(TrelloCard card) {
+	private void sendCard(TrelloCard card, ListAdapter listAdapter) {
 		Uri.Builder builder = new Uri.Builder();
 		builder.scheme(TrelloScheme)
 				.authority(TrelloApi)
@@ -149,7 +156,7 @@ public class Trello {
 				.appendPath("cards")
 				.appendQueryParameter("key", TrelloKey)
 				.appendQueryParameter("token", Token);
-		PostDetail postDetail = new PostDetail(card, this.trelloDatabase, builder.build().toString());
+		PostDetail postDetail = new PostDetail(card, listAdapter, this.trelloDatabase, builder.build().toString());
 		PostTask postTask = new PostTask();
 		postDetail.addParameter("name", card.getName());
 		postDetail.addParameter("desc", card.getDescription());
@@ -223,12 +230,14 @@ class PostDetail {
 	JSONObject jsonParam = new JSONObject();
 	TrelloCard card;
 	TrelloDatabase trelloDatabase;
+	ListAdapter listAdapter;
 
-	PostDetail(TrelloCard card, TrelloDatabase trelloDatabase, String url) {
+	PostDetail(TrelloCard card, ListAdapter listAdapter, TrelloDatabase trelloDatabase, String url) {
 		this.card = card;
 		this.url = url;
 		this.jsonParam = new JSONObject();
 		this.trelloDatabase = trelloDatabase;
+		this.listAdapter = listAdapter;
 	}
 
 	void addParameter(String key, String value) {
@@ -293,5 +302,16 @@ class PostTask extends AsyncTask<PostDetail, Void, String> {
 		super.onPostExecute(result);
 		Log.i("Info", "Successful post: " + result);
 		postDetail.trelloDatabase.updateStatus(postDetail.card.getId(), TrelloDatabase.STATUS_SENT);
+		postDetail.card.setStatus(TrelloDatabase.STATUS_SENT);
+		update(postDetail.listAdapter, postDetail.card);
+	}
+
+	private void update(ListAdapter listAdapter, TrelloCard trelloCard)
+	{
+		int c = listAdapter.getCount();
+		for (int i = 0; i < c; i++) {
+			String item = (String) listAdapter.getItem(i);
+			Log.i("Update", item);
+		}
 	}
 }
